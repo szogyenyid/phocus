@@ -25,11 +25,13 @@
         "phpstan/phpstan": "^1.10",
         "phpmd/phpmd": "^2.13",
         "phpcompatibility/php-compatibility": "^9.3",
-        "dealerdirect/phpcodesniffer-composer-installer": "^1.0"
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+        "pestphp/pest": "^2.6"
     },
     "config": {
         "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "pestphp/pest-plugin": true
         }
     }
 }
