@@ -1,5 +1,6 @@
 <?php
 
+use Szogyenyid\Phocus\Method;
 use Szogyenyid\Phocus\RouteGroup;
 use Szogyenyid\Phocus\Router;
 
@@ -7,7 +8,7 @@ use Szogyenyid\Phocus\Router;
     ->withBaseDir("project", ["hotfix", "staging", "PRJCT-\d+"])
     ->route(
         [
-            "get" => [
+            Method::GET => [
                 '/' => [ProfileController::class, 'myProfile'],
                 '/admin' => [AdminController::class, 'panelPage'],
                 '/login' => [LoginController::class, 'loginPage'],
@@ -27,7 +28,7 @@ use Szogyenyid\Phocus\Router;
                 ),
                 '/register' => [UserManagementController::class, 'registerPage'],
             ],
-            "post" => [],
-            "any" => []
+            Method::POST => [],
+            Method::ANY => []
         ]
     );

@@ -91,12 +91,13 @@ class Router
     public function route(array $array, ?callable $fallbackAction = null): void
     {
         foreach ($array as $method => $routes) {
+            $method = Method::from($method)->value;
             foreach ($routes as $route => $action) {
                 if ($action instanceof RouteGroup) {
                     $this->route($this->collapse($method, $route, $action->getRoutes()));
                     continue;
                 }
-                if ($method === "any") {
+                if ($method === "ANY") {
                     $this->matchRoute($route, $action);
                 }
                 $this->matchMethod($method, $route, $action);
@@ -125,7 +126,7 @@ class Router
      */
     private function matchMethod(string $method, string $route, callable|string $action): void
     {
-        if ($_SERVER['REQUEST_METHOD'] == strtoupper($method)) {
+        if ($_SERVER['REQUEST_METHOD'] == $method) {
             $this->matchRoute($route, $action);
         }
     }
