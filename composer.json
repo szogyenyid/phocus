@@ -1,8 +1,8 @@
 {
     "name": "szogyenyid/phocus",
-    "description": "A simple routing and templating framework to let you focus on the businsess logic.",
+    "description": "A lightweight router with one purpose: route. No dependencies, no mess.",
     "type": "library",
-    "keywords": ["php", "framework", "routing", "templating"],
+    "keywords": ["lightweight", "php", "router", "routing"],
     "homepage": "https://github.com/szogyenyid/phocus",
     "license": "MIT",
     "autoload": {
