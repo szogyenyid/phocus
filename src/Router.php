@@ -44,9 +44,12 @@ class Router
     public function __construct()
     {
         $cwd = getcwd();
+        // @codeCoverageIgnoreStart
+        // It is impossible to programatically disable getcwd()
         if ($cwd === false) {
             throw new Exception("Could not get current working directory.");
         }
+        // @codeCoverageIgnoreEnd
         $this->baseDir = $cwd;
         $this->baseUrl = '/';
     }
@@ -194,10 +197,6 @@ class Router
     private function matchRoute(string $route, callable|string $action): void
     {
         list($route_parts, $request_url_parts) = $this->getRouteAndRequestParts($route);
-        if ($route_parts[0] == '' && count($request_url_parts) == 0) {
-            $this->handleAction($action);
-            return;
-        }
         if (count($route_parts) != count($request_url_parts)) {
             return;
         }
