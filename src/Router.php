@@ -78,12 +78,12 @@ class Router
     /**
      * The main method to call, and match the routes with the request.
      *
-     * @param array<array<string,mixed>> $array          The routes to match.
-     * @param mixed                      $fallbackAction The action to call if no route is matched.
+     * @param array<array<string,callable|string>> $array          The routes to match.
+     * @param callable|null                        $fallbackAction The action to call if no route is matched.
      * @return void
-     * @throws Exception                                 Route nor fallback not found.
+     * @throws Exception                                           Route nor fallback not found.
      */
-    public function route(array $array, mixed $fallbackAction = null): void
+    public function route(array $array, ?callable $fallbackAction = null): void
     {
         foreach ($array as $method => $routes) {
             foreach ($routes as $route => $action) {
@@ -139,11 +139,11 @@ class Router
     /**
      * Calls an action if the request method is GET and matches the pattern
      *
-     * @param string $route  The route to match.
-     * @param mixed  $action The action to execute.
+     * @param string          $route  The route to match.
+     * @param callable|string $action The action to execute.
      * @return void
      */
-    private function get(string $route, mixed $action): void
+    private function get(string $route, callable|string $action): void
     {
         if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             $this->matchRoute($route, $action);
@@ -152,11 +152,11 @@ class Router
     /**
      * Calls an action if the request method is POST and matches the pattern
      *
-     * @param string $route  The route to match.
-     * @param mixed  $action The action to execute.
+     * @param string          $route  The route to match.
+     * @param callable|string $action The action to execute.
      * @return void
      */
-    private function post(string $route, mixed $action): void
+    private function post(string $route, callable|string $action): void
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $this->matchRoute($route, $action);
@@ -165,11 +165,11 @@ class Router
     /**
      * Calls an action if the request method is PUT and matches the pattern
      *
-     * @param string $route  The route to match.
-     * @param mixed  $action The action to execute.
+     * @param string          $route  The route to match.
+     * @param callable|string $action The action to execute.
      * @return void
      */
-    private function put(string $route, mixed $action): void
+    private function put(string $route, callable|string $action): void
     {
         if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
             $this->matchRoute($route, $action);
@@ -178,11 +178,11 @@ class Router
     /**
      * Calls an action if the request method is DELETE and matches the pattern
      *
-     * @param string $route  The route to match.
-     * @param mixed  $action The action to execute.
+     * @param string          $route  The route to match.
+     * @param callable|string $action The action to execute.
      * @return void
      */
-    private function delete(string $route, mixed $action): void
+    private function delete(string $route, callable|string $action): void
     {
         if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
             $this->matchRoute($route, $action);
@@ -191,11 +191,11 @@ class Router
     /**
      * Calls an action if the request method is PATCH and matches the pattern
      *
-     * @param string $route  The route to match.
-     * @param mixed  $action The action to execute.
+     * @param string          $route  The route to match.
+     * @param callable|string $action The action to execute.
      * @return void
      */
-    private function patch(string $route, mixed $action): void
+    private function patch(string $route, callable|string $action): void
     {
         if ($_SERVER['REQUEST_METHOD'] == 'PATCH') {
             $this->matchRoute($route, $action);
@@ -204,23 +204,23 @@ class Router
     /**
      * Calls an action if the request matches the pattern
      *
-     * @param string $route  The route to match.
-     * @param mixed  $action The action to execute.
+     * @param string          $route  The route to match.
+     * @param callable|string $action The action to execute.
      * @return void
      */
-    private function any(string $route, mixed $action): void
+    private function any(string $route, callable|string $action): void
     {
         $this->matchRoute($route, $action);
     }
     /**
      * Handles the route matching.
      *
-     * @param string $route  The route to match.
-     * @param mixed  $action The action to execute.
+     * @param string          $route  The route to match.
+     * @param callable|string $action The action to execute.
      * @return void
      * @throws Exception     URL sanitization failed.
      */
-    private function matchRoute(string $route, mixed $action): void
+    private function matchRoute(string $route, callable|string $action): void
     {
         $ROOT = $this->baseDir;
 
