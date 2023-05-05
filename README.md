@@ -41,7 +41,7 @@ Instead of using the as strings, it is recommended to user the built-in `Method`
 
 Serving routes is possible with two types of handlers: `callable` and `string`.
 
-Callable handlers are the easiest to use, as you can just pass a function or a method to the router. It may be used with class methods, in the form of `[ClassName::class, 'methodName']` for static methods, as `[new ClassName(), 'methodName']` for instance methods.
+Callable handlers are the easiest to use, as you can just pass a function or a method to the router. It may be used with class methods, in the form of `[ClassName::class, 'methodName']` for static methods, as `[new ClassName(), 'methodName']` for instance methods. Closures are also supported.
 
 If a string is set as a handler, Phocus will try to include the file the string points to. This use should be avoided, but works well in easy cases, like showing static pages.
 
