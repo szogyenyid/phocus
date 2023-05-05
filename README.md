@@ -1,6 +1,6 @@
 # Phocus
 
-![PHP 7.4 required](https://img.shields.io/packagist/dependency-v/szogyenyid/phocus/php) ![Stable: v1.0.0](https://img.shields.io/packagist/v/szogyenyid/phocus?label=stable)
+![PHP 7.4 required](https://img.shields.io/packagist/dependency-v/szogyenyid/phocus/php) ![Stable: v1.0.0](https://img.shields.io/packagist/v/szogyenyid/phocus?color=%233586c8&label=stable)
 
 A lightweight router with one purpose: route. No dependencies, no mess.
 
