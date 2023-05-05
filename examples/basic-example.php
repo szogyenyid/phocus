@@ -10,6 +10,7 @@ use Szogyenyid\Phocus\Router;
             '/profile' => [ProfileController::class, 'myProfile'],
             '/logout' => function () {
                 unset($_SESSION);
-            }
+            },
+            '/admin' => [new Router(), 'panelPage'],
         ]
     ]);

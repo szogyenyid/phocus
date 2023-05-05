@@ -15,13 +15,13 @@ use Szogyenyid\Phocus\Router;
                 '/newpass/$email/$token' => [UserManagementController::class, 'newpassPage'],
                 '/profile' => new RouteGroup(
                     [
-                        '' => [ProfileController::class, 'profilePage'],
+                        '' => [ProfileController::class, 'myProfile'],
                         '/$id' => [ProfileController::class, 'profilePage'],
                         '/settings' => new RouteGroup(
                             [
                                 '' => [ProfileController::class, 'settingsPage'],
-                                '/cv' => [ProfileController::class, 'cvPage'],
-                                '/details' => [ProfileController::class, 'detailsPage'],
+                                '/cv' => [ProfileController::class, 'cvSettings'],
+                                '/details' => [ProfileController::class, 'settingDetails'],
                             ]
                         )
                     ]
