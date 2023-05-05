@@ -15,18 +15,21 @@ class Router
      * @var string
      */
     private string $baseDir;
+
     /**
      * The base url of the application.
      *
      * @var string
      */
     private string $baseUrl;
+
     /**
      * Whether the request has been completed or not.
      *
      * @var boolean
      */
     private bool $completed = false;
+
     /**
      * Whether to remove the trailing slash from the url or not.
      *
@@ -59,12 +62,13 @@ class Router
      */
     public function withBaseDir(string $urlBase = "", array $subdirRegex = []): self
     {
-        $suffix = array();
+        $suffix = [];
         preg_match('/' . implode('|', $subdirRegex) . '/', $_SERVER['REQUEST_URI'], $suffix);
         $this->baseUrl = '/' . $urlBase . (isset($suffix[0]) ? '/' . $suffix[0] : '');
         $this->baseUrl = str_replace('//', '/', $this->baseUrl);
         return $this;
     }
+
     /**
      * If this method is called, all trailing slashes will be removed from the requested URL. This is useful to
      * guarantee that the same route is called regardless of whether the user adds a trailing slash or not.
@@ -75,6 +79,7 @@ class Router
     {
         $this->removeTrailingSlash = true;
     }
+
     /**
      * The main method to call, and match the routes with the request.
      *
@@ -89,23 +94,14 @@ class Router
             foreach ($routes as $route => $action) {
                 if ($action instanceof RouteGroup) {
                     $this->route($this->collapse($method, $route, $action->getRoutes()));
-                } elseif ($method === "get") {
-                    $this->get($route, $action);
-                } elseif ($method === "post") {
-                    $this->post($route, $action);
-                } elseif ($method === "put") {
-                    $this->put($route, $action);
-                } elseif ($method === "delete") {
-                    $this->delete($route, $action);
-                } elseif ($method === "patch") {
-                    $this->patch($route, $action);
-                } elseif ($method === "any") {
-                    $this->any($route, $action);
-                } else {
-                    throw new Exception("Invalid request method: " . $method);
+                    continue;
                 }
+                if ($method === "any") {
+                    $this->matchRoute($route, $action);
+                }
+                $this->matchMethod($method, $route, $action);
                 if ($this->completed) {
-                    die();
+                    return;
                 }
             }
         }
@@ -118,6 +114,22 @@ class Router
         }
         return;
     }
+
+    /**
+     * Calls an action if the request method is the set one and matches the pattern
+     *
+     * @param string          $method The request method to match.
+     * @param string          $route  The route to match.
+     * @param callable|string $action The action to execute.
+     * @return void
+     */
+    private function matchMethod(string $method, string $route, callable|string $action): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] == strtoupper($method)) {
+            $this->matchRoute($route, $action);
+        }
+    }
+
     /**
      * Collapses the routes array to a single path.
      *
@@ -128,104 +140,26 @@ class Router
      */
     private function collapse(string $method, string $prefix, array $routes): array
     {
-        $toRet = array(
-            $method => array()
-        );
+        $toRet = [
+            $method => []
+        ];
         foreach ($routes as $gr => $gra) {
             $toRet[$method][$prefix . $gr] = $gra;
         }
         return $toRet;
     }
-    /**
-     * Calls an action if the request method is GET and matches the pattern
-     *
-     * @param string          $route  The route to match.
-     * @param callable|string $action The action to execute.
-     * @return void
-     */
-    private function get(string $route, callable|string $action): void
-    {
-        if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-            $this->matchRoute($route, $action);
-        }
-    }
-    /**
-     * Calls an action if the request method is POST and matches the pattern
-     *
-     * @param string          $route  The route to match.
-     * @param callable|string $action The action to execute.
-     * @return void
-     */
-    private function post(string $route, callable|string $action): void
-    {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $this->matchRoute($route, $action);
-        }
-    }
-    /**
-     * Calls an action if the request method is PUT and matches the pattern
-     *
-     * @param string          $route  The route to match.
-     * @param callable|string $action The action to execute.
-     * @return void
-     */
-    private function put(string $route, callable|string $action): void
-    {
-        if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
-            $this->matchRoute($route, $action);
-        }
-    }
-    /**
-     * Calls an action if the request method is DELETE and matches the pattern
-     *
-     * @param string          $route  The route to match.
-     * @param callable|string $action The action to execute.
-     * @return void
-     */
-    private function delete(string $route, callable|string $action): void
-    {
-        if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
-            $this->matchRoute($route, $action);
-        }
-    }
-    /**
-     * Calls an action if the request method is PATCH and matches the pattern
-     *
-     * @param string          $route  The route to match.
-     * @param callable|string $action The action to execute.
-     * @return void
-     */
-    private function patch(string $route, callable|string $action): void
-    {
-        if ($_SERVER['REQUEST_METHOD'] == 'PATCH') {
-            $this->matchRoute($route, $action);
-        }
-    }
-    /**
-     * Calls an action if the request matches the pattern
-     *
-     * @param string          $route  The route to match.
-     * @param callable|string $action The action to execute.
-     * @return void
-     */
-    private function any(string $route, callable|string $action): void
-    {
-        $this->matchRoute($route, $action);
-    }
-    /**
-     * Handles the route matching.
-     *
-     * @param string          $route  The route to match.
-     * @param callable|string $action The action to execute.
-     * @return void
-     * @throws Exception     URL sanitization failed.
-     */
-    private function matchRoute(string $route, callable|string $action): void
-    {
-        $ROOT = $this->baseDir;
 
-        // (Route parts: Array ( [0] => hello [1] => $name )
-        // Request parts: Array ( [0] => profile [1] => preprod [2] => hello [3] => Dani ) )
+    /**
+     * Gets the route and request parts.
+     *
+     * @param string $route The route to match.
+     * @return array<array<string>>        The route and request parts.
+     * @throws Exception                   URL sanitization failed.
+     */
+    private function getRouteAndRequestParts(string $route): array
+    {
+        // Route parts:   Array (                               [0] => hello [1] => $name )
+        // Request parts: Array ( [0] => profile [1] => preprod [2] => hello [3] => Mario )
         $request_url = filter_var($_SERVER['REQUEST_URI'], FILTER_SANITIZE_URL);
         if (!$request_url) {
             throw new Exception("URL sanitization failed");
@@ -242,15 +176,30 @@ class Router
         $request_url_parts = explode('/', $request_url);
         array_shift($route_parts);
         array_shift($request_url_parts);
+        return [$route_parts, $request_url_parts];
+    }
+
+    /**
+     * Handles the route matching.
+     *
+     * @param string          $route  The route to match.
+     * @param callable|string $action The action to execute.
+     * @return void
+     * @throws Exception     URL sanitization failed.
+     */
+    private function matchRoute(string $route, callable|string $action): void
+    {
+        list($route_parts, $request_url_parts) = $this->getRouteAndRequestParts($route);
         if ($route_parts[0] == '' && count($request_url_parts) == 0) {
-            is_callable($action) ? $action() : include_once($ROOT . '/' . $action);
-            $this->completed = true;
+            $this->handleAction($action);
+            return;
         }
         if (count($route_parts) != count($request_url_parts)) {
             return;
         }
         $parameters = [];
-        for ($i = 0; $i < count($route_parts); $i++) {
+        $noOfRouteParts = count($route_parts);
+        for ($i = 0; $i < $noOfRouteParts; $i++) {
             $route_part = $route_parts[$i];
             if (preg_match("/^[$]/", $route_part)) {
                 if (!isset($request_url_parts[$i])) {
@@ -263,11 +212,29 @@ class Router
                 return;
             }
         }
+        $this->handleAction($action);
+        return;
+    }
+
+    /**
+     * Handles an action. Either calls a function or includes a file.
+     *
+     * @param string|callable $action The action to execute.
+     * @return void
+     * @throws Exception             File to include not found.
+     */
+    private function handleAction(string|callable $action): void
+    {
         if (is_callable($action)) {
-                $action(...$parameters);
-        } else {
-            include_once($ROOT . '/' . $action);
+            $action();
+            $this->completed = true;
+            return;
         }
+        if (!file_exists($this->baseDir . '/' . $action)) {
+            throw new Exception("File not found: " . $this->baseDir . '/' . $action);
+        }
+        include_once($this->baseDir . '/' . $action);
         $this->completed = true;
+        return;
     }
 }
