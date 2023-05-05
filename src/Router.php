@@ -66,6 +66,9 @@ class Router
         preg_match('/' . implode('|', $subdirRegex) . '/', $_SERVER['REQUEST_URI'], $suffix);
         $this->baseUrl = '/' . $urlBase . (isset($suffix[0]) ? '/' . $suffix[0] : '');
         $this->baseUrl = str_replace('//', '/', $this->baseUrl);
+        if ($this->baseUrl != '/') {
+            $this->baseUrl = rtrim($this->baseUrl, '/');
+        }
         return $this;
     }
 
