@@ -76,11 +76,12 @@ class Router
      * If this method is called, all trailing slashes will be removed from the requested URL. This is useful to
      * guarantee that the same route is called regardless of whether the user adds a trailing slash or not.
      *
-     * @return void
+     * @return self
      */
-    public function removeTrailingSlash(): void
+    public function removeTrailingSlash(): self
     {
         $this->removeTrailingSlash = true;
+        return $this;
     }
 
     /**
@@ -171,7 +172,6 @@ class Router
         if ($this->baseUrl != '/') {
             $request_url = str_replace($this->baseUrl, '', $request_url);
         }
-        $request_url = rtrim($request_url, '/');
         $request_url = strtok($request_url, '?') ?: $request_url;
         if ($this->removeTrailingSlash) {
             $request_url = rtrim($request_url, '/');
