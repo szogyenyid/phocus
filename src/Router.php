@@ -213,7 +213,7 @@ class Router
                 return;
             }
         }
-        $this->handleAction($action);
+        $this->handleAction($action, ...$parameters);
         return;
     }
 
@@ -224,10 +224,10 @@ class Router
      * @return void
      * @throws Exception             File to include not found.
      */
-    private function handleAction(string|callable $action): void
+    private function handleAction(string|callable $action, ...$parameters): void
     {
         if (is_callable($action)) {
-            $action();
+            $action($parameters);
             $this->completed = true;
             return;
         }
