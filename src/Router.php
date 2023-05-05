@@ -227,7 +227,7 @@ class Router
     private function handleAction(string|callable $action, ...$parameters): void
     {
         if (is_callable($action)) {
-            $action($parameters);
+            $action(...$parameters);
             $this->completed = true;
             return;
         }
