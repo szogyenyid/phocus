@@ -27,7 +27,7 @@ Using Phocus is as simple as creating arrays.
 ```php
 (new Router())
     ->route([
-        Method::GET => [
+        'GET' => [
             "/" => [HomeController::class, 'homePage'],
             '/profile' => [ProfileController::class, 'myProfile'],
         ]
@@ -37,8 +37,6 @@ Using Phocus is as simple as creating arrays.
 ### Available request methods
 
 Phocus can handle all the HTTP methods: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`, `HEAD`, and has an additional `ANY` method, which will handle any type of request.
-
-Instead of using the as strings, it is recommended to user the built-in `Method` enum.
 
 ### Available handlers
 
@@ -56,7 +54,7 @@ To use a parameter in a route, use the `$` sign before the parameter name. The p
 ```php
 // routes.php
 
-Method::GET => [
+'GET' => [
     '/profile/$id' => [ProfileController::class, 'profilePage'],
 ]
 
@@ -75,7 +73,7 @@ class ProfileController {
 Route groups are a great way to group routes together. They can be used to set a common prefix for routes. They can be embedded to each other in multiple levels.
 
 ```php
-Method::GET => [
+'GET' => [
     '/profile' => new RouteGroup(
         [
             '' => [ProfileController::class, 'myProfile'],
