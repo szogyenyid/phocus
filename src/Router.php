@@ -85,16 +85,24 @@ class Router
      */
     public function route(array $array, mixed $fallbackAction = null): void
     {
-        foreach ($array as $type => $routes) {
+        foreach ($array as $method => $routes) {
             foreach ($routes as $route => $action) {
                 if ($action instanceof RouteGroup) {
-                    $this->route($this->collapse($type, $route, $action->getRoutes()));
-                } elseif ($type === "get") {
+                    $this->route($this->collapse($method, $route, $action->getRoutes()));
+                } elseif ($method === "get") {
                     $this->get($route, $action);
-                } elseif ($type === "post") {
+                } elseif ($method === "post") {
                     $this->post($route, $action);
-                } elseif ($type === "any") {
+                } elseif ($method === "put") {
+                    $this->put($route, $action);
+                } elseif ($method === "delete") {
+                    $this->delete($route, $action);
+                } elseif ($method === "patch") {
+                    $this->patch($route, $action);
+                } elseif ($method === "any") {
                     $this->any($route, $action);
+                } else {
+                    throw new Exception("Invalid request method: " . $method);
                 }
                 if ($this->completed) {
                     die();
@@ -151,6 +159,45 @@ class Router
     private function post(string $route, mixed $action): void
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $this->matchRoute($route, $action);
+        }
+    }
+    /**
+     * Calls an action if the request method is PUT and matches the pattern
+     *
+     * @param string $route  The route to match.
+     * @param mixed  $action The action to execute.
+     * @return void
+     */
+    private function put(string $route, mixed $action): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
+            $this->matchRoute($route, $action);
+        }
+    }
+    /**
+     * Calls an action if the request method is DELETE and matches the pattern
+     *
+     * @param string $route  The route to match.
+     * @param mixed  $action The action to execute.
+     * @return void
+     */
+    private function delete(string $route, mixed $action): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
+            $this->matchRoute($route, $action);
+        }
+    }
+    /**
+     * Calls an action if the request method is PATCH and matches the pattern
+     *
+     * @param string $route  The route to match.
+     * @param mixed  $action The action to execute.
+     * @return void
+     */
+    private function patch(string $route, mixed $action): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'PATCH') {
             $this->matchRoute($route, $action);
         }
     }
