@@ -1,18 +1,23 @@
 <?php
 
+use Szogyenyid\Phocus\Middleware;
 use Szogyenyid\Phocus\RouteGroup;
 use Szogyenyid\Phocus\Router;
 
 (new Router())
     ->withBaseDir("project", ["hotfix", "staging", "PRJCT-\d+"])
+    ->registerMiddleware([
+        'auth' => [AuthMiddleware::class],
+        'admin' => [AdminMiddleware::class],
+    ])
     ->route(
         [
             'GET' => [
                 '/' => [ProfileController::class, 'myProfile'],
-                '/admin' => [AdminController::class, 'panelPage'],
+                '/admin|auth,admin' => [AdminController::class, 'panelPage'],
                 '/login' => [LoginController::class, 'loginPage'],
                 '/newpass/$email/$token' => [UserManagementController::class, 'newpassPage'],
-                '/profile' => new RouteGroup(
+                '/profile|auth' => new RouteGroup(
                     [
                         '' => [ProfileController::class, 'myProfile'],
                         '/$id' => [ProfileController::class, 'profilePage'],
@@ -31,3 +36,21 @@ use Szogyenyid\Phocus\Router;
             'ANY' => []
         ]
     );
+
+// --------
+
+class AuthMiddleware implements Middleware
+{
+    public function process(): bool
+    {
+        return true;
+    }
+}
+
+class AdminMiddleware implements Middleware
+{
+    public function process(): bool
+    {
+        return false;
+    }
+}
