@@ -4,6 +4,9 @@ namespace Szogyenyid\Phocus\Tests\Unit;
 
 use Exception;
 use Szogyenyid\Phocus\Router;
+use Szogyenyid\Phocus\Tests\DummyFalseMiddleware;
+use Szogyenyid\Phocus\Tests\DummyTrueMiddleware;
+use Szogyenyid\Phocus\Tests\NotImplementingMiddleware;
 use ValueError;
 
 it('can be constructed', function () {
@@ -56,6 +59,52 @@ it('throws exception if file to include not found', function () {
             '/' => 'foo.php'
         ]
     ]))->toThrow(Exception::class);
+});
+
+it('can register middleware', function () {
+    $router = (new Router())
+        ->registerMiddleware(["dummy" => DummyTrueMiddleware::class]);
+    expect($router)->toBeInstanceOf(Router::class);
+});
+
+it('throws an exception if unregistered middleware is used', function () {
+    $_SERVER['REQUEST_METHOD'] = "GET";
+    $_SERVER['REQUEST_URI'] = "/";
+    expect(fn() => (new Router())->route([
+        'GET' => [
+            '/|mw' => function () {
+                echo "Hello World";
+            }
+        ]
+    ]))->toThrow(Exception::class);
+});
+
+it('throws exception if a middleware does not implement the MW interface', function () {
+    $_SERVER['REQUEST_METHOD'] = "GET";
+    $_SERVER['REQUEST_URI'] = "/";
+    expect(fn() => (new Router())
+        ->registerMiddleware(["mw" => NotImplementingMiddleware::class])
+        ->route([
+            'GET' => [
+                '/|mw' => function () {
+                    echo "Hello World";
+                }
+            ]
+        ]))->toThrow(Exception::class);
+});
+
+it('throws exception if a middleware fails', function () {
+    $_SERVER['REQUEST_METHOD'] = "GET";
+    $_SERVER['REQUEST_URI'] = "/";
+    expect(fn() => (new Router())
+        ->registerMiddleware(["mw" => DummyFalseMiddleware::class])
+        ->route([
+            'GET' => [
+                '/|mw' => function () {
+                    echo "Hello World";
+                }
+            ]
+        ]))->toThrow(Exception::class);
 });
 
 it('routes', function () {

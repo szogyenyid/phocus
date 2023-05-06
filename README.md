@@ -68,6 +68,33 @@ class ProfileController {
 }
 ```
 
+### Using middleware
+
+Middlewares are a great way to handle common tasks, like authentication, logging, etc. Phocus supports middlewares out of the box. Middlewares are classes, which implement the `Middleware` interface. This interface has a single method, `process`, which has no parameter, and returns a boolean. If the `process` method's return value is `true`, the request will be passed to the next middleware or - if no middleware is left - to the router. If a middleware returns `false`, a `MiddlewareFailedException` is thrown immediately.
+
+To add middleware to a route, you have to register it in the router first:
+
+```php
+(new Router())
+    ->registerMiddleware([
+        'auth' => AuthenticationMiddleware::class,
+        'log' => LogginMiddleware::class,
+    ])
+    ->route([/* routes */]);
+```
+
+After registering the middlewares, you can use them in the routes by appending them to the route, separated by a `|`, and each middleware separated by a single comma:
+
+```php
+/* istantiate router, register middleware */
+    ->route([
+        'GET' => [
+            '/profile|auth' => [ProfileController::class, 'profilePage'],
+            '/admin|auth,log' => [AdminController::class, 'adminPage'],
+        ]
+    ]);
+```
+
 ### Route groups
 
 Route groups are a great way to group routes together. They can be used to set a common prefix for routes. They can be embedded to each other in multiple levels.

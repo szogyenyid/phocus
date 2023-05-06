@@ -24,6 +24,12 @@ class Router
     private string $baseUrl;
 
     /**
+     * The middlewares that are usable in the router.
+     *
+     * @var array<string,string>
+     */
+    private array $middlewares = [];
+    /**
      * Whether the request has been completed or not.
      *
      * @var boolean
@@ -55,7 +61,7 @@ class Router
     }
 
     /**
-     * Undocumented function
+     * Sets the base directory and optional subdirectory regexes for the application.
      *
      * @param string        $urlBase     If you are going to deploy your app to example.com/project,
      *                                   then set this to 'project'.
@@ -86,7 +92,19 @@ class Router
         $this->removeTrailingSlash = true;
         return $this;
     }
-
+    /**
+     * Registers middlewares with names.
+     *
+     * @param array<string,string> $middlewares The middleware functions to register.
+     * @return self
+     */
+    public function registerMiddleware(array $middlewares): self
+    {
+        foreach ($middlewares as $name => $middleware) {
+            $this->middlewares[$name] = $middleware;
+        }
+        return $this;
+    }
     /**
      * The main method to call, and match the routes with the request.
      *
@@ -122,7 +140,32 @@ class Router
         }
         return;
     }
-
+    /**
+     * Handles middlewares.
+     *
+     * @param array<string> $middlewares The middlewares to execute.
+     * @return void
+     * @throws Exception                 Middleware not registered.
+     * @throws MiddlewareFailedException Middleware failed.
+     */
+    private function handleMiddlewares(array $middlewares): void
+    {
+        foreach ($middlewares as $middleware) {
+            if ($middleware == "") {
+                continue;
+            }
+            if (!isset($this->middlewares[$middleware])) {
+                throw new Exception("Middleware not found: " . $middleware);
+            }
+            $mwInstance = new $this->middlewares[$middleware]();
+            if (!($mwInstance instanceof Middleware)) {
+                throw new Exception("Middleware must implement Middleware interface: " . $this->middlewares[$middleware]);
+            }
+            if (!$mwInstance->process()) {
+                throw new MiddlewareFailedException($this->middlewares[$middleware]);
+            }
+        }
+    }
     /**
      * Calls an action if the request method is the set one and matches the pattern
      *
@@ -161,7 +204,7 @@ class Router
      * Gets the route and request parts.
      *
      * @param string $route The route to match.
-     * @return array<array<string>>        The route and request parts.
+     * @return array<array<string>>        The route, middlewares and request parts.
      * @throws Exception                   URL sanitization failed.
      */
     private function getRouteAndRequestParts(string $route): array
@@ -179,11 +222,14 @@ class Router
         if ($this->removeTrailingSlash) {
             $request_url = rtrim($request_url, '/');
         }
+        $middlewaresAndRoute = explode('|', $route);
+        $middlewares = explode(',', ($middlewaresAndRoute[1] ?? ''));
+        $route = $middlewaresAndRoute[0];
         $route_parts = explode('/', $route);
         $request_url_parts = explode('/', $request_url);
         array_shift($route_parts);
         array_shift($request_url_parts);
-        return [$route_parts, $request_url_parts];
+        return [$route_parts, $middlewares, $request_url_parts];
     }
 
     /**
@@ -196,7 +242,7 @@ class Router
      */
     private function matchRoute(string $route, callable|string $action): void
     {
-        list($route_parts, $request_url_parts) = $this->getRouteAndRequestParts($route);
+        list($route_parts, $middlewares, $request_url_parts) = $this->getRouteAndRequestParts($route);
         if (count($route_parts) != count($request_url_parts)) {
             return;
         }
@@ -215,19 +261,22 @@ class Router
                 return;
             }
         }
-        $this->handleAction($action, ...$parameters);
+        $this->handleAction($action, $middlewares, $parameters);
         return;
     }
 
     /**
      * Handles an action. Either calls a function or includes a file.
      *
-     * @param string|callable $action The action to execute.
+     * @param string|callable $action      The action to execute.
+     * @param array<string>   $middlewares The middlewares to execute.
+     * @param array<mixed>    $parameters  The parameters to pass to the action.
      * @return void
      * @throws Exception             File to include not found.
      */
-    private function handleAction(string|callable $action, ...$parameters): void
+    private function handleAction(string|callable $action, array $middlewares, array $parameters): void
     {
+        $this->handleMiddlewares($middlewares);
         if (is_callable($action)) {
             $action(...$parameters);
             $this->completed = true;
