@@ -2,21 +2,10 @@
 
 namespace Szogyenyid\Phocus\Tests\Feature;
 
+use Szogyenyid\Phocus\Middleware;
+use Szogyenyid\Phocus\MiddlewareFailedException;
 use Szogyenyid\Phocus\RouteGroup;
 use Szogyenyid\Phocus\Router;
-
-class TestController
-{
-    public static function foo()
-    {
-        echo "foo";
-    }
-
-    public function duplicate(int $number)
-    {
-        echo $number * 2;
-    }
-}
 
 it('routes', function () {
     $_SERVER['REQUEST_METHOD'] = "GET";
@@ -290,3 +279,73 @@ it('does not remove trailing slash by default', function () {
     $result = ob_get_clean();
     expect($result)->toBe("");
 });
+
+it('can handle multiple middleware', function () {
+    $_SERVER['REQUEST_METHOD'] = "GET";
+    $_SERVER['REQUEST_URI'] = "/test";
+    ob_start();
+    (new Router())
+    ->registerMiddleware([
+        "mw1" => DummyTrueMiddleware::class,
+        "mw2" => DummyTrueMiddleware::class,
+        "mw3" => DummyFalseMiddleware::class,
+    ])
+    ->route([
+        'GET' => [
+            '/test|mw1,mw2' => function () {
+                echo "baz";
+            }
+        ]
+    ]);
+    $result = ob_get_clean();
+    expect($result)->toBe("baz");
+});
+
+it('dies if a middleware fails', function () {
+    $_SERVER['REQUEST_METHOD'] = "GET";
+    $_SERVER['REQUEST_URI'] = "/test";
+    expect(fn() => (new Router())
+    ->registerMiddleware([
+        "mw1" => DummyTrueMiddleware::class,
+        "mw2" => DummyFalseMiddleware::class,
+        "mw3" => DummyTrueMiddleware::class,
+    ])
+    ->route([
+        'GET' => [
+            '/test|mw1,mw2,mw3' => function () {
+                echo "baz";
+            }
+        ]
+    ]))->toThrow(MiddlewareFailedException::class);
+});
+
+// -----
+
+class TestController
+{
+    public static function foo()
+    {
+        echo "foo";
+    }
+
+    public function duplicate(int $number)
+    {
+        echo $number * 2;
+    }
+}
+
+class DummyTrueMiddleware implements Middleware
+{
+    public function process(): bool
+    {
+        return true;
+    }
+}
+
+class DummyFalseMiddleware implements Middleware
+{
+    public function process(): bool
+    {
+        return false;
+    }
+}
