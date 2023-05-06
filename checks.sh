@@ -1,3 +1,4 @@
+composer update
 ./vendor/bin/phpstan analyse --memory-limit=1G --level=9 src
 ./vendor/bin/phpmd src text codesize,unusedcode,naming,design,cleancode      
 ./vendor/bin/phpcs -ns --report=summary --extensions=php --standard=PSR12 src
