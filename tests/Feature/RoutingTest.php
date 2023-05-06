@@ -1,11 +1,11 @@
 <?php
 
-namespace Szogyenyid\Phocus\Tests\Feature;
-
-use Szogyenyid\Phocus\Middleware;
 use Szogyenyid\Phocus\MiddlewareFailedException;
 use Szogyenyid\Phocus\RouteGroup;
 use Szogyenyid\Phocus\Router;
+use Szogyenyid\Phocus\Tests\DummyFalseMiddleware;
+use Szogyenyid\Phocus\Tests\DummyTrueMiddleware;
+use Szogyenyid\Phocus\Tests\TestController;
 
 it('routes', function () {
     $_SERVER['REQUEST_METHOD'] = "GET";
@@ -79,7 +79,7 @@ it('includes a template file', function () {
     ob_start();
     (new Router())->route([
         'GET' => [
-            '/test' => "tests/assets/template.php"
+            '/test' => "tests/helpers/template.php"
         ]
     ]);
     $result = ob_get_clean();
@@ -318,34 +318,3 @@ it('dies if a middleware fails', function () {
         ]
     ]))->toThrow(MiddlewareFailedException::class);
 });
-
-// -----
-
-class TestController
-{
-    public static function foo()
-    {
-        echo "foo";
-    }
-
-    public function duplicate(int $number)
-    {
-        echo $number * 2;
-    }
-}
-
-class DummyTrueMiddleware implements Middleware
-{
-    public function process(): bool
-    {
-        return true;
-    }
-}
-
-class DummyFalseMiddleware implements Middleware
-{
-    public function process(): bool
-    {
-        return false;
-    }
-}

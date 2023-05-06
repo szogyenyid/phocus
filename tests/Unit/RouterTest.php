@@ -3,8 +3,10 @@
 namespace Szogyenyid\Phocus\Tests\Unit;
 
 use Exception;
-use Szogyenyid\Phocus\Middleware;
 use Szogyenyid\Phocus\Router;
+use Szogyenyid\Phocus\Tests\DummyFalseMiddleware;
+use Szogyenyid\Phocus\Tests\DummyTrueMiddleware;
+use Szogyenyid\Phocus\Tests\NotImplementingMiddleware;
 use ValueError;
 
 it('can be constructed', function () {
@@ -81,7 +83,7 @@ it('throws exception if a middleware does not implement the MW interface', funct
     $_SERVER['REQUEST_METHOD'] = "GET";
     $_SERVER['REQUEST_URI'] = "/";
     expect(fn() => (new Router())
-        ->registerMiddleware(["mw" => WrongMiddleware::class])
+        ->registerMiddleware(["mw" => NotImplementingMiddleware::class])
         ->route([
             'GET' => [
                 '/|mw' => function () {
@@ -119,29 +121,3 @@ it('routes', function () {
     $result = ob_get_clean();
     expect($result)->toBe("Hello World");
 });
-
-// -----
-
-class WrongMiddleware
-{
-    public function process(): bool
-    {
-        return true;
-    }
-}
-
-class DummyTrueMiddleware implements Middleware
-{
-    public function process(): bool
-    {
-        return true;
-    }
-}
-
-class DummyFalseMiddleware implements Middleware
-{
-    public function process(): bool
-    {
-        return false;
-    }
-}
