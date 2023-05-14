@@ -5,8 +5,8 @@ on:
     push:
 
 jobs:
-    static-analysis:
-        name: "Static Analysis by PHPStan"
+    analysis:
+        name: "Code analysis"
         runs-on: ${{ matrix.operating-system }}
         strategy:
             matrix:
@@ -40,10 +40,22 @@ jobs:
                   restore-keys: "php-${{ matrix.php-version }}-${{ matrix.dependencies }}"
 
             - name: "Install dependencies"
-              run: "composer install --no-interaction --no-progress --no-suggest"
+              run:  "composer install --no-interaction --no-progress --no-suggest"
 
-            - name: "phpstan"
-              run: "vendor/bin/phpstan analyse --error-format=github --level=9 src"
+            - name: "PHPStan"
+              run:  "vendor/bin/phpstan analyse --error-format=github --level=9 src"
 
-            - name: "phpmd"
-              run: "vendor/bin/phpmd src text codesize,unusedcode,naming,design,cleancode"
+            - name: "PHPMD"
+              run:  "vendor/bin/phpmd src text codesize,unusedcode,naming,design,cleancode"
+
+            - name: "PHPCS - PSR12"
+              run:  "vendor/bin/phpcs -ns --report=summary --extensions=php --standard=PSR12 src"
+            
+            - name: "PHPCS - DocBlocks"
+              run:  "vendor/bin/phpcs src --standard=Squiz --sniffs=Squiz.Commenting.FunctionComment,Squiz.Commenting.FunctionCommentThrowTag,Squiz.Commenting.ClassComment,Squiz.Commenting.VariableComment"
+            
+            - name: "PHP 7.4 Compatibility"
+              run:  "vendor/bin/phpcs -p src --standard=PHPCompatibility --runtime-set testVersion 7.4-"
+
+            - name: "Pest tests"
+              run:  "vendor/bin/pest --coverage --min=95"
