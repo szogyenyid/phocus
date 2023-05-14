@@ -55,5 +55,3 @@ jobs:
 
             - name: "Pest tests"
               run:  "vendor/bin/pest --coverage --min=95"
-    tests:
-        name: "Unit tests"
