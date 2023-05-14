@@ -34,7 +34,7 @@ jobs:
 
     analysis:
         name: "Code analysis"
-        runs-on: "ubunut-latest"
+        runs-on: "ubuntu-latest"
         needs: "preparation"
         steps:
             - name: "PHPStan"
