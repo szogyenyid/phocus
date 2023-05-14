@@ -37,18 +37,9 @@ jobs:
 
             - name: "PHPMD"
               run:  "vendor/bin/phpmd src text codesize,unusedcode,naming,design,cleancode"
-
-            - name: "PHPCS - PSR12"
-              run:  "vendor/bin/phpcs -ns --report=summary --extensions=php --standard=PSR12 src"
-            
-            - name: "PHPCS - DocBlocks"
-              run:  "vendor/bin/phpcs src --standard=Squiz --sniffs=Squiz.Commenting.FunctionComment,Squiz.Commenting.FunctionCommentThrowTag,Squiz.Commenting.ClassComment,Squiz.Commenting.VariableComment"
             
             - name: "PHP 7.4 Compatibility"
               run:  "vendor/bin/phpcs -p src --standard=PHPCompatibility --runtime-set testVersion 7.4-"
-
-            - name: "Pest tests"
-              run:  "vendor/bin/pest --coverage --min=95"
 
     unit-tests:
         name: "Unit tests"
@@ -79,3 +70,35 @@ jobs:
 
             - name: "Pest tests"
               run:  "vendor/bin/pest --coverage --min=95"
+
+    code-style:
+        name: "Code style"
+        runs-on: "ubuntu-latest"
+        steps:
+            - name: "Checkout"
+              uses: "actions/checkout@v3"
+
+            - name: "Install PHP"
+              uses: "shivammathur/setup-php@v2"
+              with:
+                  php-version: "8.2"
+                  ini-values: memory_limit=-1
+                  tools: composer:v2, cs2pr
+
+            - name: "Cache dependencies"
+              uses: "actions/cache@v3"
+              with:
+                  path: |
+                      ~/.composer/cache
+                      vendor
+                  key: "php-8.2-locked"
+                  restore-keys: "php-8.2-locked"
+
+            - name: "Install dependencies"
+              run:  "composer install --no-interaction --no-progress --no-suggest"
+
+            - name: "PHPCS - PSR12"
+              run:  "vendor/bin/phpcs -ns --report=summary --extensions=php --standard=PSR12 src"
+            
+            - name: "PHPCS - DocBlocks"
+              run:  "vendor/bin/phpcs src --standard=Squiz --sniffs=Squiz.Commenting.FunctionComment,Squiz.Commenting.FunctionCommentThrowTag,Squiz.Commenting.ClassComment,Squiz.Commenting.VariableComment"
