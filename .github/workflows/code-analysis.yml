@@ -1,15 +1,13 @@
-name: "Static Analysis by PHPStan"
+name: "Code analysis"
 
 on:
     pull_request:
     push:
 
 jobs:
-    static-analysis-psalm:
+    static-analysis:
         name: "Static Analysis by PHPStan"
-
         runs-on: ${{ matrix.operating-system }}
-
         strategy:
             matrix:
                 dependencies:
@@ -46,3 +44,6 @@ jobs:
 
             - name: "phpstan"
               run: "vendor/bin/phpstan analyse --error-format=github --level=9 src"
+
+            - name: "phpmd"
+              run: "vendor/bin/phpmd src text codesize,unusedcode,naming,design,cleancode"
