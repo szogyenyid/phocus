@@ -4,16 +4,10 @@ on:
     pull_request:
     push:
 
-config:
-    php-version: "8.2"
-    dependencies: "locked"
-    operating-system: "ubuntu-latest"
-
 jobs:
-    analysis:
-        name: "Code analysis"
-        runs-on: ${{ config.operating-system }}
-
+    preparation:
+        name: "Preparation of environment"
+        runs-on: "ubuntu-latest"
         steps:
             - name: "Checkout"
               uses: "actions/checkout@v3"
@@ -22,7 +16,7 @@ jobs:
               uses: "shivammathur/setup-php@v2"
               with:
                   coverage: "pcov"
-                  php-version: "${{ config.php-version }}"
+                  php-version: "8.2"
                   ini-values: memory_limit=-1
                   tools: composer:v2, cs2pr
 
@@ -32,12 +26,17 @@ jobs:
                   path: |
                       ~/.composer/cache
                       vendor
-                  key: "php-${{ config.php-version }}-${{ config.dependencies }}"
-                  restore-keys: "php-${{ config.php-version }}-${{ config.dependencies }}"
+                  key: "php-8.2-locked"
+                  restore-keys: "php-8.2-locked"
 
             - name: "Install dependencies"
               run:  "composer install --no-interaction --no-progress --no-suggest"
 
+    analysis:
+        name: "Code analysis"
+        runs-on: "ubunut-latest"
+        needs: "preparation"
+        steps:
             - name: "PHPStan"
               run:  "vendor/bin/phpstan analyse --error-format=github --level=9 src"
 
